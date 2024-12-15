@@ -1,50 +1,47 @@
 import { useState } from "react";
 
-type Todo = {
-  value: string;
-  readonly id: number;
-  checked: boolean;
-  removed: boolean;
-};
-
 export const App = () => {
   const [text, setText] = useState("");
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [filter, setFilter] = useState<Filter>("all");
 
+  const filteredTodos = todos.filter((todo) => {
+    switch (filter) {
+      case "all":
+        return !todo.removed;
+      case "checked":
+        return todo.checked && !todo.removed;
+      case "unchecked":
+        return !todo.checked && !todo.removed;
+      case "removed":
+        return todo.removed;
+      default:
+        return todo;
+    }
+  });
+
+  //　filter変更
+  const handleFilter = (filter: Filter) => {
+    setFilter(filter);
+  };
+  // 削除されたtodoをゴミ箱から削除
+  const handleEmpty = () => {
+    setTodos((todos) => todos.filter((todo) => !todo.removed));
+  };
   //　追加前todoの文言変更
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setText(e.target.value);
   };
-  //　追加後todoの文言変更
-  const handleEdit = (id: number, value: string) => {
+  //　todoの更新処理
+  const handleTodo = <K extends keyof Todo, V extends Todo[K]>(
+    id: number,
+    key: K,
+    value: V
+  ) => {
     setTodos((todos) => {
       const newTodos = todos.map((todo) => {
         if (todo.id === id) {
-          return { ...todo, value };
-        }
-        return todo;
-      });
-      return newTodos;
-    });
-  };
-  //　todoの完了 or 未完了フラグ更新
-  const handleCheck = (id: number, checked: boolean) => {
-    setTodos((todos) => {
-      const newTodos = todos.map((todo) => {
-        if (todo.id === id) {
-          return { ...todo, checked };
-        }
-        return todo;
-      });
-      return newTodos;
-    });
-  };
-  //　todoの削除
-  const handleRemove = (id: number, removed: boolean) => {
-    setTodos((todos) => {
-      const newTodos = todos.map((todo) => {
-        if (todo.id === id) {
-          return { ...todo, removed };
+          return { ...todo, [key]: value };
         }
         return todo;
       });
@@ -66,33 +63,58 @@ export const App = () => {
 
   return (
     <div>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSubmit();
-        }}
+      <select
+        name="filter"
+        defaultValue="all"
+        onChange={(e) => handleFilter(e.target.value as Filter)}
       >
-        <input type="text" value={text} onChange={handleChange} />
-        <input type="submit" value="追加" onSubmit={handleSubmit} />
-      </form>
+        <option value="all">全てのタスク</option>
+        <option value="checked">完了したタスク</option>
+        <option value="unchecked">現在のタスク</option>
+        <option value="removed">ごみ箱</option>
+      </select>
+
+      {filter === "removed" && (
+        <button
+          onClick={handleEmpty}
+          disabled={todos.filter((todo) => todo.removed).length === 0}
+        >
+          ゴミ箱を空にする
+        </button>
+      )}
+
+      {!["checked", "removed"].includes(filter) && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+        >
+          <input type="text" value={text} onChange={handleChange} />
+          <input type="submit" value="追加" onSubmit={handleSubmit} />
+        </form>
+      )}
+
       <ul>
-        {todos.map((todo) => (
+        {filteredTodos.map((todo) => (
           <li key={todo.id}>
             <input
               type="checkbox"
               disabled={todo.removed}
               checked={todo.checked}
-              onChange={() => handleCheck(todo.id, !todo.checked)}
+              onChange={() => handleTodo(todo.id, "checked", !todo.checked)}
             />
             <input
               type="text"
               disabled={todo.checked || todo.removed}
               value={todo.value}
               onChange={(e) => {
-                handleEdit(todo.id, e.target.value);
+                handleTodo(todo.id, "value", e.target.value);
               }}
             />
-            <button onClick={() => handleRemove(todo.id, !todo.removed)}>
+            <button
+              onClick={() => handleTodo(todo.id, "removed", !todo.removed)}
+            >
               {todo.removed ? "復元" : "削除"}
             </button>
           </li>
