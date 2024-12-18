@@ -1,14 +1,15 @@
 import { useState } from "react";
-
+// MUI関連読み込み
 import GlobalStyles from "@mui/material/GlobalStyles";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { indigo, pink } from "@mui/material/colors";
-
+//　コンポーネント読み込み
 import { FormDialog } from "./components/FormDialog";
 import { ActionButton } from "./components/ActionButton";
 import { SideBar } from "./components/SideBar";
 import { TodoItem } from "./components/TodoItem";
 import { ToolBar } from "./components/ToolBar";
+import { QR } from "./components/QR";
 
 const theme = createTheme({
   palette: {
@@ -29,6 +30,9 @@ export const App = () => {
   const [text, setText] = useState("");
   const [todos, setTodos] = useState<Todo[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   //　filter変更
   const handleFilter = (filter: Filter) => {
@@ -39,8 +43,23 @@ export const App = () => {
     setTodos((todos) => todos.filter((todo) => !todo.removed));
   };
   //　追加前todoの文言変更
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setText(e.target.value);
+  };
+  // ドロワーの開閉更新
+  const handleToggleDrawer = () => {
+    setDrawerOpen((drawerOpen) => !drawerOpen);
+  };
+  // QRコードの開閉更新
+  const handleToggleQR = () => {
+    setQrOpen((qrOpen) => !qrOpen);
+  };
+  //　Todo作成ダイアログの開閉更新
+  const handleToggleDialog = () => {
+    setDialogOpen((dialogOpen) => !dialogOpen);
+    setText("");
   };
   //　todoの更新処理
   const handleTodo = <K extends keyof Todo, V extends Todo[K]>(
@@ -60,7 +79,10 @@ export const App = () => {
   };
   //　todoの追加
   const handleSubmit = () => {
-    if (!text) return;
+    if (!text) {
+      setDialogOpen((dialogOpen) => !dialogOpen);
+      return;
+    }
     const newTodo: Todo = {
       value: text,
       id: new Date().getTime(),
@@ -69,17 +91,31 @@ export const App = () => {
     };
     setTodos((todos) => [newTodo, ...todos]);
     setText("");
+    setDialogOpen((dialogOpen) => !dialogOpen);
   };
 
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyles styles={{ body: { margin: 0, padding: 0 } }} />
 
-      <ToolBar filter={filter} />
+      <ToolBar filter={filter} onToggleDrawer={handleToggleDrawer} />
 
-      <SideBar onFilter={handleFilter} />
+      <SideBar
+        drawerOpen={drawerOpen}
+        onToggleQr={handleToggleQR}
+        onToggleDrawer={handleToggleDrawer}
+        onFilter={handleFilter}
+      />
 
-      <FormDialog text={text} onSubmit={handleSubmit} onChange={handleChange} />
+      <QR qrOpen={qrOpen} onClose={handleToggleQR} />
+
+      <FormDialog
+        text={text}
+        dialogOpen={dialogOpen}
+        onSubmit={handleSubmit}
+        onChange={handleChange}
+        onToggleDialog={handleToggleDialog}
+      />
 
       <TodoItem todos={todos} filter={filter} onTodo={handleTodo} />
 

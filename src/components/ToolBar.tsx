@@ -8,6 +8,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 
 type Props = {
   filter: Filter;
+  onToggleDrawer: () => void;
 };
 
 export const ToolBar = (props: Props) => {
@@ -36,6 +37,7 @@ export const ToolBar = (props: Props) => {
             edge="start"
             color="inherit"
             sx={{ mr: 2 }}
+            onClick={props.onToggleDrawer}
           >
             <MenuIcon />
           </IconButton>
