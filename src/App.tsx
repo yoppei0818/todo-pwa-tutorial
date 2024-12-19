@@ -10,6 +10,7 @@ import { SideBar } from "./components/SideBar";
 import { TodoItem } from "./components/TodoItem";
 import { ToolBar } from "./components/ToolBar";
 import { QR } from "./components/QR";
+import { AlertDialog } from "./components/AlertDialog";
 
 const theme = createTheme({
   palette: {
@@ -33,6 +34,7 @@ export const App = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [alertOpen, setAlertOpen] = useState(false);
 
   //　filter変更
   const handleFilter = (filter: Filter) => {
@@ -55,6 +57,10 @@ export const App = () => {
   // QRコードの開閉更新
   const handleToggleQR = () => {
     setQrOpen((qrOpen) => !qrOpen);
+  };
+  //　todo削除アラートの開閉更新
+  const handleToggleAlert = () => {
+    setAlertOpen((alertOpen) => !alertOpen);
   };
   //　Todo作成ダイアログの開閉更新
   const handleToggleDialog = () => {
@@ -117,9 +123,22 @@ export const App = () => {
         onToggleDialog={handleToggleDialog}
       />
 
+      <AlertDialog
+        alertOpen={alertOpen}
+        onEmpty={handleEmpty}
+        onToggleAlert={handleToggleAlert}
+      />
+
       <TodoItem todos={todos} filter={filter} onTodo={handleTodo} />
 
-      <ActionButton todos={todos} onEmpty={handleEmpty} />
+      <ActionButton
+        todos={todos}
+        filter={filter}
+        alertOpen={alertOpen}
+        dialogOpen={dialogOpen}
+        onToggleAlert={handleToggleAlert}
+        onToggleDialog={handleToggleDialog}
+      />
     </ThemeProvider>
   );
 };
