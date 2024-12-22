@@ -1,4 +1,8 @@
-import { useState } from "react";
+import localforage from "localforage";
+// hooks
+import { useState, useEffect } from "react";
+// 型ガード情報
+import { isTodos } from "./lib/isTodo";
 // MUI関連読み込み
 import GlobalStyles from "@mui/material/GlobalStyles";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
@@ -35,6 +39,16 @@ export const App = () => {
   const [qrOpen, setQrOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [alertOpen, setAlertOpen] = useState(false);
+
+  // indexedDBへのアクセス
+  useEffect(() => {
+    localforage
+      .getItem("todo-20241222")
+      .then((values) => isTodos(values) && setTodos(values as Todo[]));
+  }, []);
+  useEffect(() => {
+    localforage.setItem("todo-20241222", todos);
+  }, [todos]);
 
   //　filter変更
   const handleFilter = (filter: Filter) => {
