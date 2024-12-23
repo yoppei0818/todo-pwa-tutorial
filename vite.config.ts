@@ -5,6 +5,7 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: "./",
   plugins: [
     react(),
     VitePWA({
@@ -35,6 +36,7 @@ export default defineConfig({
             purpose: "maskable", // マスカブルアイコン
           },
         ],
+        id: "/todo-pwa-tutorial/",
       },
     }),
   ],
